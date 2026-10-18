@@ -6,7 +6,7 @@ var clave = "miSecretoMasOscuro";
 //conexion con supabase
 const{createClient}= require("@supabase/supabase-js");
 
-const supabaseUrl = "https://vdqxcsfeogsijajtibbj.supabase.co/rest/v1/";
+const supabaseUrl = "https://vdqxcsfeogsijajtibbj.supabase.co";
 const supabaseKey ="sb_publishable_imZz9KPEdhIlP-7hxxAAsA_fknTxGuQ";
 
 const supabase = createClient(supabaseUrl, supabaseKey);
