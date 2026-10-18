@@ -55,8 +55,9 @@ app.use(express.json());
 // req.query -> filtros de la url (?estado=0)
 // req.params -> parametros de la ruta (/recursos/:id)
 // headers -> info técnica
-var conexion = require("./conexion_mysql.js");
-var datos = require("./datos.js"); // trae ubicaciones, categorias, modelos, recursos
+
+//var conexion = require("./conexion_mysql.js");
+//var datos = require("./datos.js"); // trae ubicaciones, categorias, modelos, recursos
 var servidor_ws=require("./servidor_ws.js");
 
 
