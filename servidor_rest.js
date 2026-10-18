@@ -3,7 +3,13 @@ var express = require("express");
 var app = express();
 var jwt = require("jwt-simple");
 var clave = "miSecretoMasOscuro";
+//conexion con supabase
+cont{createClient}= require("@supabase/supabase-js");
 
+const supabaseUrl = "https://vdqxcsfeogsijajtibbj.supabase.co/rest/v1/";
+const supabaseKey ="sb_publishable_imZz9KPEdhIlP-7hxxAAsA_fknTxGuQ";
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 function verificarToken(req, res, next){
   //obtener token  de la URL
@@ -67,189 +73,273 @@ app.use("/api", function(req, res, next){
 
 
 // GET /api/ubicaciones
-app.get("/api/ubicaciones", function (req, res) {
-
-  var sql="SELECT * FROM ubicaciones";//selecionar todas las columnas de la tabla ubicaciones
-  conexion.query(sql, function (err, ubicaciones) {//ejecuta consulta en sql a mysql -> cuando acabe hace la funcion
-    if (err) {                      //busca las filas en esa tabla
-      console.log("Error al realizar select", err);
-      res.status(500).json("Error al realizar select");
-    } else{
-      console.log("Ubicaciones: ",ubicaciones);
-      res.status(200).json(ubicaciones);
+app.get("/api/ubicaciones", async function (req, res) {
+  try {
+    const{ data: ubicaciones, error } =await supabase.from("ubicaciones").select("*");
+    if (error){
+      console.log("Error al realizar select", error);
+      return res.status(500).json("Error al realizar select");
     }
-  });
+    console.log("Ubicaciones: ", ubicaciones);
+    res.status(200).json(ubicaciones);
+  } catch(error){
+    console.log("Error de conexion con supabase", error);
+    res.status(500).json("Error de conexion con supabase");
+  }
 });
 
 
-app.get("/api/categorias", function (req, res) {
-
-  var sql="SELECT * FROM categorias";
-  conexion.query(sql, function(err, categorias){
-    if (err){
-      console.log("Error al realizar select", err);
-      res.status(500).json("Error al realizar select");
-    } else{
-        res.status(200).json(categorias);
+app.get("/api/categorias", async function (req, res) {
+  try{
+    const {data: categorias, error} = await supabase.from("categorias").select("*");
+    if (error){
+      console.log("Error al realizar select", error);
+      return res.status(500).json("Error al realizar select");
     }
-  });
+    res. status(200).json(categorias);
+  } catch(error){
+    console.log("Error de conexion con supabase", error);
+    res.status(500).json("Error de conexion son supabase");
+  }
 });
 
 
 
 
-// GET /api/modelos
-app.get("/api/modelos", function (req, res) {
-  var sql="SELECT * FROM modelos";
-  conexion.query(sql, function(err, modelos){
-    if (err){
-      res.status(500).json("Error select modelos");
-    } else{
-      res.status(200).json(modelos);
+ // GET /api/modelos
+app.get("/api/modelos", async function (req, res) {
+  try {
+    const { data: modelos, error } = await supabase.from("modelos").select("*");
+
+    if (error) {
+      console.log("Error select modelos", error);
+      return res.status(500).json("Error select modelos");
     }
-  });
+
+    res.status(200).json(modelos);
+
+  } catch(error) {
+    console.log("Error de conexion con supabase", error);
+    res.status(500).json("Error de conexion con supabase");
+  }
 });
 
 
 // GET /api/recursos (sin filtros todavía)
-app.get("/api/recursos", function(req, res) {
+app.get("/api/recursos", async function(req, res) {
 
-  var categoria= req.query.categoria; //posibles filtros
+  var categoria = req.query.categoria; //posibles filtros
   var modelo = req.query.modelo;
   var ubicacion = req.query.ubicacion;
-  var estado= req.query.estado;
-  var num_serie=req.query.numero_serie;
-           
+  var estado = req.query.estado;
+  var num_serie = req.query.numero_serie;
 
-          //devuelve                           WHERE donde lo busca
-  var sql="SELECT recursos.* FROM recursos"; //inicial sin filtros
+  try {
 
-  //si hay filtro categoria hay que añadir la tabla de modelo al sql
-  if (categoria!=undefined) {
-    sql+=" INNER JOIN modelos ON recursos.modelo = modelos.id"; //añade tabla mdoelo y su relacion
-  } //RELACIONA CUANDO EL CAMPO MODELO DEL RECURSO COINCIDE CON EL ID DEL MODELO
+    //devuelve                           WHERE donde lo busca
+    var consulta = supabase.from("recursos").select("*"); //inicial sin filtros
 
-  //al no saber cuanto filtros hay y cual es el primero
-  sql+= " WHERE 1=1"; //true y ya puedes poner los filtros añadidos con AND
-  //CONDICION QUE FAVORECE A la dinamica de los filtros
+    //si hay filtro categoria hay que añadir la tabla de modelo al sql
+    //RELACIONA CUANDO EL CAMPO MODELO DEL RECURSO COINCIDE CON EL ID DEL MODELO
 
-  //filtros
-  if (modelo!=undefined){
-    sql+=" AND recursos.modelo = "+ modelo;
-  }
+    if (categoria != undefined) {
 
-  if (ubicacion!=undefined){
-    sql+=" AND recursos.ubicacion = "+ubicacion;
-  }
+      // Obtenemos los modelos que pertenecen a esa categoria
+      const { data: modelosCategoria, error: errorModelos } = await supabase
+        .from("modelos")
+        .select("id")
+        .eq("categoria", categoria);
 
-  if (estado !=undefined){
-    sql+=" AND recursos.estado = "+estado;
-  }
+      if (errorModelos) {
+        console.log("Error obteniendo modelos", errorModelos);
+        return res.status(500).json("Error en select");
+      }
 
-  if (categoria != undefined){
-    sql+=" AND modelos.categoria = "+categoria;
-  }
+      var idsModelos = modelosCategoria.map(function(m) {
+        return m.id;
+      });
 
-  conexion.query(sql, function(err, recursos){
-    if (err){
-      res.status(500).json("Error en select");
-    } else{
-      res.status(200).json(recursos);
+      // Si no hay modelos de esa categoria, no hay recursos
+      if (idsModelos.length === 0) {
+        return res.status(200).json([]);
+      }
+
+      consulta = consulta.in("modelo", idsModelos);
     }
-  });
+
+    //al no saber cuanto filtros hay y cual es el primero
+    //En Supabase podemos encadenar filtros directamente,
+    //sin necesitar WHERE 1=1
+    //CONDICION QUE FAVORECE A la dinamica de los filtros
+
+    //filtros
+    if (modelo != undefined) {
+      consulta = consulta.eq("modelo", modelo);
+    }
+
+    if (ubicacion != undefined) {
+      consulta = consulta.eq("ubicacion", ubicacion);
+    }
+
+    if (estado != undefined) {
+      consulta = consulta.eq("estado", estado);
+    }
+
+    //El filtro categoria ya se ha aplicado utilizando los modelos
+
+    const { data: recursos, error } = await consulta;
+
+    if (error) {
+      console.log("Error en select", error);
+      return res.status(500).json("Error en select");
+    }
+
+    res.status(200).json(recursos);
+
+  } catch(error) {
+    console.log("Error de conexion con supabase", error);
+    res.status(500).json("Error de conexion con supabase");
+  }
 });
 
 
 
 
-app.get("/api/recursos/:id", function (req, res) {
-  var id= req.params.id;
+app.get("/api/recursos/:id", async function (req, res) {
+  var id = req.params.id;
 
-  var sql = "SELECT * FROM recursos WHERE recursos.id = "+id;//devuelve filas filas dentro de un array
+  try {
 
-  conexion.query(sql, function(err, recurso){
-    if (err){
-      res.status(500).json("Error en select idRecurso");
-    } else{
-        if (recurso.length==1){
-          res.status(200).json(recurso[0]);
-        } else{
-          res.status(404).json("Recurso no encontrado");
-        }
+    //devuelve filas filas dentro de un array
+    const { data: recurso, error } = await supabase
+      .from("recursos")
+      .select("*")
+      .eq("id", id);
+
+    if (error) {
+      console.log("Error en select idRecurso", error);
+      return res.status(500).json("Error en select idRecurso");
     }
-  });
+
+    if (recurso.length == 1) {
+      res.status(200).json(recurso[0]);
+    } else {
+      res.status(404).json("Recurso no encontrado");
+    }
+
+  } catch(error) {
+    console.log("Error de conexion con supabase", error);
+    res.status(500).json("Error de conexion con supabase");
+  }
 });
 
 
-app.post("/api/recursos", function(req, res) {
-  var nuevo= {
+
+
+app.post("/api/recursos", async function(req, res) {
+  var nuevo = {
     modelo: Number(req.body.modelo),
     ubicacion: Number(req.body.ubicacion),
     numero_serie: req.body.numero_serie,
     estado: Number(req.body.estado)
   };
-  
-  var sql= "INSERT INTO recursos (modelo, ubicacion, numero_serie, estado) VALUES ("
-        +nuevo.modelo +", " 
-        +nuevo.ubicacion+", '" 
-        +nuevo.numero_serie+"', "   //'' al ser string el numeroserie
-        +nuevo.estado+")";
-  
-  conexion.query(sql, function(err, resultado){
-    if (err){
-      res.status(500).json("Error en INSERT")
-    } else{
-      servidor_ws.avisoRecurso(resultado.insertId, req.body.origen);// INSERTAR UN RECURSO
-      res.status(201).json("Recurso creado");
+
+  try {
+
+    //INSERTAR UN RECURSO
+    //Antes se construia una sentencia SQL con VALUES
+    //'' al ser string el numeroserie
+    //Ahora Supabase recibe directamente el objeto nuevo
+
+    const { data: resultado, error } = await supabase
+      .from("recursos")
+      .insert(nuevo)
+      .select("id")
+      .single();
+
+    if (error) {
+      console.log("Error en INSERT", error);
+      return res.status(500).json("Error en INSERT");
     }
-  })
+
+    servidor_ws.avisoRecurso(resultado.id, req.body.origen);// INSERTAR UN RECURSO
+    res.status(201).json("Recurso creado");
+
+  } catch(error) {
+    console.log("Error de conexion con supabase", error);
+    res.status(500).json("Error de conexion con supabase");
+  }
 });
 
-//cuando se prueba este post en postman, se carga el nuevo recurso en memoria, pero no en 
+//cuando se prueba este post en postman, se carga el nuevo recurso en memoria, pero no en
 // memoria RAM, en el archivo (no aparece en datos.js)
 
-app.put("/api/recursos/:id", function(req, res) {
-  var id=req.params.id;
-  var sql = "UPDATE recursos SET modelo = "
-  +Number(req.body.modelo) + ", ubicacion = "
-  +Number(req.body.ubicacion)+", numero_serie = '"
-  +req.body.numero_serie+"' ,estado = "
-  +Number(req.body.estado) 
-  + " WHERE recursos.id = "+ id;
 
-  conexion.query(sql, function(err, resultado) {
 
-    if (err) {
-      res.status(500).json("Error en UPDATE");
-    } else {
-      res.status(200).json("Recurso actualizado");
+
+app.put("/api/recursos/:id", async function(req, res) {
+  var id = req.params.id;
+
+  var cambios = {
+    modelo: Number(req.body.modelo),
+    ubicacion: Number(req.body.ubicacion),
+    numero_serie: req.body.numero_serie,
+    estado: Number(req.body.estado)
+  };
+
+  try {
+
+    const { data: resultado, error } = await supabase
+      .from("recursos")
+      .update(cambios)
+      .eq("id", id)
+      .select("id");
+
+    if (error) {
+      console.log("Error en UPDATE", error);
+      return res.status(500).json("Error en UPDATE");
     }
 
-  });
+    res.status(200).json("Recurso actualizado");
 
+  } catch(error) {
+    console.log("Error de conexion con supabase", error);
+    res.status(500).json("Error de conexion con supabase");
+  }
 });
 
-app.delete("/api/recursos/:id", function(req, res) {
+
+
+
+app.delete("/api/recursos/:id", async function(req, res) {
 
   var id = req.params.id;
 
-  var sql = "DELETE FROM recursos WHERE id = " + id;
+  try {
 
-  conexion.query(sql, function(err, resultado) {
+    const { data: resultado, error } = await supabase
+      .from("recursos")
+      .delete()
+      .eq("id", id)
+      .select("id");
 
-    if (err) {
-      res.status(500).json("Error en DELETE");
-    } else {
-      if (resultado.affectedRows == 0) {
-        res.status(404).json("Recurso no encontrado");
-      } else {
-        res.status(200).json("Recurso borrado");
-      }
+    if (error) {
+      console.log("Error en DELETE", error);
+      return res.status(500).json("Error en DELETE");
     }
 
-  });
+    if (resultado.length == 0) {
+      res.status(404).json("Recurso no encontrado");
+    } else {
+      res.status(200).json("Recurso borrado");
+    }
 
+  } catch(error) {
+    console.log("Error de conexion con supabase", error);
+    res.status(500).json("Error de conexion con supabase");
+  }
 });
+
 
 //GESTORES
 //LOGIN (contraseña)
