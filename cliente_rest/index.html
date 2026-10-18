@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplicación Gestor</title> <!--solo una pagina (url) en mi html, y 
+    metemos vasrias pantallas con div, de esta forma no tengo que recargar pagina, porque
+    tengo todo en el mismo html-->
+    <link rel="stylesheet" href="estilo.css">
+    <script src="rest.js"></script>
+    <script src="main.js"></script> 
+</head>
+
+
+<body>
+    <div id="login" class="seccion activa"> <!-- login empieza visible-->
+        <h1>Aplicación Gestor</h1>
+        <h2>Acceso</h2>
+        <div>Usuario: <input type="text" id="usuario"></div>
+        <div>Contraseña: <input type="password" id="password"></div>
+        <button id="entrar">Entrar</button>
+        <button id="registrarse">Registrarse</button>
+    </div>
+
+    <!-- REGISTRO -->
+    <div id="registro" class="seccion">
+        <h1>Aplicación Gestor</h1>
+        <h2>Datos gestor</h2>
+
+        <div>Nombre: <input type="text" id="nombre"></div>
+        <div>Apellidos: <input type="text" id="apellidos"></div>
+        <div>Login: <input type="text" id="usuarioRegistro"></div>
+        <div>Contraseña: <input type="password" id="passwordRegistro"></div>
+
+        <button id="guardar">Guardar</button>
+        <button id="cancelar">Cancelar</button>
+    </div>
+
+    <div id="menu-principal" class="seccion">
+        <h1>Aplicación Gestor</h1>
+        <h2>Inicio</h2>
+        <div>Bienvenido <span id="nombreGestor"></span></div> <!--añadimos span-->
+        <button id="btneditardatos">Editar datos</button>
+
+        <h3>Búsqueda de recursos</h3>
+        <div>
+          Categoría:
+          <select id="categoriaFilter">
+            <option value="all">Todos</option>
+          </select>
+        </div>
+
+        <div>
+          Modelo:
+          <select id="modeloFilter">
+            <option value="all">Todos</option>
+          </select>
+        </div>
+
+        <div>
+          Ubicación:
+          <select id="ubicacionFilter">
+            <option value="all">Todos</option>
+          </select>
+        </div>
+
+        <div>
+          Estado:
+          <select id="estadoFilter">
+            <option value="all">Todos</option>
+            <option value="0">Operativo</option>
+            <option value="1">En uso</option>
+            <option value="2">Averiado</option>
+          </select>
+        </div>
+
+        <button id="btnBuscarRecursos">Buscar</button>
+
+        <h3>Recursos</h3>
+
+        <table id="tablaRecursos" border="1">
+          <thead>
+            <tr>
+              <th>N. Serie</th>
+              <th>Categoría</th>
+              <th>Modelo</th>
+              <th>Ubicación</th>
+              <th>Estado</th>
+              <th> </th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- filas dinamicas -->
+          </tbody>
+        </table>
+
+        <button id="btnNuevoRecurso">Añadir recurso</button>
+
+        <h3>Avisos</h3>
+
+        <table id="tablaAvisos" border="1">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Origen</th>
+              <th>Texto</th>
+            </tr>
+          </thead>
+          <tbody id="avisos"></tbody> <!--uso del mismo id que en sanitario porque cada app tiene su propio html-->
+        </table>
+
+        <h3>Ministerio de Sanidad</h3>
+        <button id="btnEnviarReservas">Enviar reservas al Ministerio</button>
+
+        <h3>Ranking de especialidades médicas</h3>
+        <button id="btnRankingMinisterio">Consultar ranking</button>
+        <div id="resultadoRanking"></div>
+
+        <button onclick="salir()">Salir</button>
+    </div>
+
+
+    <div id="ficha-recurso" class="seccion">
+      <h1>Aplicación Gestor</h1>
+      <h2>Recurso</h2>
+
+      <h3>Datos recurso</h3>
+
+      <div>
+        Categoría:
+        <select id="fichaCategoria"></select>
+      </div>
+
+      <div>
+        Modelo:
+        <select id="fichaModelo"></select>
+      </div>
+
+      <div>
+        Núm. Serie:
+        <input type="text" id="fichaSerie">
+      </div>
+
+      <div>
+        Ubicación:
+        <select id="fichaUbicacion"></select>
+      </div>
+
+      <div>
+        Estado:
+        <select id="fichaEstado">
+          <option value="0">Operativo</option>
+          <option value="1">En Baja</option>
+          <option value="2">Defectuoso</option>
+          <option value="3">Mantenimiento</option>
+        </select>
+      </div>
+
+      <button id="btnGuardarRecurso">Guardar</button>
+
+      <h3>Reservas</h3>
+      <table id="tablaReservas" border="1">
+        <thead>
+          <tr>
+            <th>Sanitario</th>
+            <th>H. estim.</th>
+            <th>F. Petición</th>
+            <th>F. Inicio</th>
+            <th>F. Fin</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>Reseñas</h3>
+      <table id="tablaResenyas" border="1">
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Sanitario</th>
+            <th>Valoración</th>
+            <th>Comentario</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <button id="btnVolverListado">Volver al listado</button>
+    </div>
+
+
+
+<script>
+
+  var seccionActual = "login";
+
+  function cambiarSeccion(id) {
+    document.getElementById(seccionActual).classList.remove("activa");
+    document.getElementById(id).classList.add("activa");
+    seccionActual = id;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+      // LOGIN
+    document.getElementById("entrar").addEventListener("click", hacerLogin);
+
+    // REGISTRO (abrir pantalla)
+    document.getElementById("registrarse").addEventListener("click", function () {
+      modogestor = "registro";
+      limpiarRegistro();
+      cambiarSeccion("registro");
+    });
+
+    // EDITAR DATOS (abrir pantalla) -> llama a main.js para precargar
+    document.getElementById("btneditardatos").addEventListener("click", function () {
+      modogestor = "editar";
+      cambiarSeccion("registro");
+    });
+
+    // GUARDAR (único botón, decide POST o PUT en main.js)
+    document.getElementById("guardar").addEventListener("click", hacerRegistro);
+
+    // CANCELAR
+    document.getElementById("cancelar").addEventListener("click", function () {
+      if (modogestor === "editar") cambiarSeccion("menu-principal");
+      else cambiarSeccion("login");
+    });
+    
+    document.getElementById("btnBuscarRecursos").addEventListener("click", buscarRecursos);
+    document.getElementById("btnNuevoRecurso").addEventListener("click", nuevoRecurso);
+    document.getElementById("btnGuardarRecurso").addEventListener("click", guardarRecurso);
+    document.getElementById("btnVolverListado").addEventListener("click", function(){
+      cambiarSeccion("menu-principal");
+    });
+
+    document.getElementById("btnEnviarReservas").addEventListener("click", enviarReservas);
+    document.getElementById("btnRankingMinisterio").addEventListener("click", obtenerDatosMinisterio);
+  });
+  
+  
+  /*function irARegistro() {
+  ca});mbiarSeccion("registro");
+  }*/
+
+
+</script>
+</body>
+</html>
+
+<!-- POSTMAN (FORMA DE DEPURAR) -> si priuebo servicio con postman y no funcion es error del servidos
+si pruebo con postman y el servicio funciona sera error del cliente
+ lo pueden pedir en examen -> diseñar servicio solo en el servidor y comprobar que funciona -> sería con postman 
+-->
+

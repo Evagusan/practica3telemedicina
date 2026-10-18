@@ -1,0 +1,125 @@
+/* estilo.css - estilo tipo PDF */
+
+/* Base */
+body{
+  font-family: Arial, Helvetica, sans-serif;
+  background: #fff;
+  margin: 0;
+  padding: 0;
+}
+
+/* Secciones */
+.seccion{ display:none; }
+.activa{ display:block; }
+
+/* Caja principal (login/registro/home...) */
+#login, #registro, #menu-principal, #datos-usuarios, #ficha-recurso{
+  width: 600px;
+  margin: 60px auto;
+  border: 2px solid #333;
+  background: #fff;
+}
+
+/* Cabecera gris grande "Aplicación Gestor" */
+#login h1, #registro h1, #menu-principal h1, #datos-usuarios h1, #ficha-recurso h1{
+  margin: 0;
+  padding: 14px 0;
+  background: #bfbfbf;
+  text-align: center;
+  font-size: 34px;
+  font-weight: bold;
+}
+
+/* Título sección (Acceso / Datos gestor / Inicio) */
+#login h2, #registro h2, #menu-principal h2, #datos-usuarios h2, #ficha-recurso h2{
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 18px;
+  font-weight: bold;
+  border-bottom: 1px solid #cfcfcf;
+}
+
+/* Filas de formulario: “Usuario: [input]” */
+#login > div, #registro > div{
+  width: 420px;
+  margin: 10px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 16px;
+}
+
+/* Inputs */
+#login input, #registro input{
+  width: 260px;
+  padding: 4px;
+  font-size: 14px;
+  border: 1px solid #777;
+}
+
+/* Botones centrados abajo */
+#login button, #registro button{
+  margin: 10px 6px 16px 6px;
+  padding: 3px 12px;
+  font-size: 14px;
+  border: 1px solid #777;
+  background: #eee;
+  cursor: pointer;
+}
+
+#login button:hover, #registro button:hover{
+  background: #e2e2e2;
+}
+
+/* Centrar la botonera */
+#login, #registro{
+  text-align: center;
+}
+
+/* Home y datos usuario, algo básico */
+#menu-principal > div, #datos-usuarios > div{
+  padding: 12px 14px;
+  font-size: 16px;
+}
+
+#menu-principal button, #datos-usuarios button{
+  margin: 10px 6px 16px 6px;
+  padding: 3px 12px;
+  font-size: 14px;
+  border: 1px solid #777;
+  background: #eee;
+  cursor: pointer;
+}
+
+
+/* que me quede organizado la ficha de cada recurso*/
+#ficha-recurso > div{
+  width: 420px;
+  margin: 10px auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 16px;
+}
+
+#ficha-recurso select, #ficha-recurso input{
+  width: 260px;
+  padding: 4px;
+  font-size: 14px;
+  border: 1px solid #777;
+}
+
+#ficha-recurso button{
+  margin: 10px 6px 16px 6px;
+  padding: 3px 12px;
+  font-size: 14px;
+  border: 1px solid #777;
+  background: #eee;
+  cursor: pointer;
+}
+
+.reserva-verde { background: #c8f7c5; }  /* pendiente */
+.reserva-azul  { background: #cfe8ff; }  /* en uso ok */
+.reserva-roja  { background: #ffcccc; }  /* en uso pasada */
