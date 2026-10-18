@@ -247,7 +247,7 @@ function hacerLogin() {
           document.getElementById("nombreGestor").textContent =
             gestor.nombre + " " + gestor.apellidos;
             nombreUsuarioAvisos=gestor.nombre+ " " +gestor.apellidos;
-            conectarAvisosGestor();
+            //conectarAvisosGestor();
         }
 
         // cargar combos (categorias->modelos->ubicaciones) y entrar
