@@ -58,7 +58,7 @@ app.use(express.json());
 
 //var conexion = require("./conexion_mysql.js");
 //var datos = require("./datos.js"); // trae ubicaciones, categorias, modelos, recursos
-var servidor_ws=require("./servidor_ws.js");
+//var servidor_ws=require("./servidor_ws.js");
 
 
 app.use("/appCliente", express.static("cliente_rest"));
@@ -263,7 +263,7 @@ app.post("/api/recursos", async function(req, res) {
       return res.status(500).json("Error en INSERT");
     }
 
-    servidor_ws.avisoRecurso(resultado.id, req.body.origen);// INSERTAR UN RECURSO
+    //servidor_ws.avisoRecurso(resultado.id, req.body.origen);// INSERTAR UN RECURSO
     res.status(201).json("Recurso creado");
 
   } catch(error) {
